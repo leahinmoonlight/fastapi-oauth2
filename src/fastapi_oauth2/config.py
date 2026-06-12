@@ -1,8 +1,10 @@
 import os
 from typing import List
 from typing import Union
+from typing import Optional
 
 from .client import OAuth2Client
+from .state import StateBackend
 
 
 class OAuth2Config:
@@ -15,6 +17,7 @@ class OAuth2Config:
     jwt_expires: int
     jwt_algorithm: str
     clients: List[OAuth2Client]
+    state_backend: Optional[StateBackend]
 
     def __init__(
             self,
@@ -26,6 +29,7 @@ class OAuth2Config:
             jwt_expires: Union[int, str] = 900,
             jwt_algorithm: str = "HS256",
             clients: List[OAuth2Client] = None,
+            state_backend: Optional[StateBackend] = None,
     ) -> None:
         if allow_http:
             os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -36,3 +40,4 @@ class OAuth2Config:
         self.jwt_expires = int(jwt_expires)
         self.jwt_algorithm = jwt_algorithm
         self.clients = clients or []
+        self.state_backend = state_backend
