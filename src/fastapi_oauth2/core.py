@@ -57,7 +57,6 @@ class OAuth2Core:
     _oauth_client: Optional[WebApplicationClient] = None
     _authorization_endpoint: str = None
     _token_endpoint: str = None
-    _state: str = None
 
     def __init__(self, client: OAuth2Client, state_backend: Optional[StateBackend] = None) -> None:
         self.client_id = client.client_id
