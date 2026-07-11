@@ -4,6 +4,7 @@ from typing import Union
 from typing import Optional
 
 from .client import OAuth2Client
+from .state import CookieStateBackend
 from .state import StateBackend
 
 
@@ -33,6 +34,8 @@ class OAuth2Config:
     ) -> None:
         if allow_http:
             os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+        if isinstance(state_backend, CookieStateBackend) and not enable_ssr:
+            raise ValueError("CookieStateBackend requires enable_ssr to be True")
         self.enable_ssr = enable_ssr
         self.allow_http = allow_http
         self.same_site = same_site
