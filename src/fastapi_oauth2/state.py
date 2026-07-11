@@ -1,18 +1,20 @@
 import secrets
 import string
 import time
+from collections import OrderedDict
 from typing import Optional
 
 from jose.exceptions import JOSEError
 from starlette.requests import Request
 from starlette.responses import Response
 
+
 class StateBackend:
     def generate_state(self, request: Request) -> str:
         state = "".join([secrets.choice(string.ascii_letters) for _ in range(32)])
         if request.query_params.get("state"):
             state = request.query_params["state"]
-        request._oauth2_state = state
+        request.state.oauth2_state = state
         return state
 
     def store_state(self, request: Request, response: Optional[Response] = None) -> None:
@@ -30,21 +32,29 @@ class StateBackend:
 
 
 class InMemoryStateBackend(StateBackend):
-    """Stores the state in memory. This is not recommended for production
-    because it only allows one user to authenticate at a time, and does not
-    work across multiple workers/processes.
+    """Tracks pending states in memory, so multiple flows can be in flight at once
+    within a single process. Does not work across multiple workers/processes, so it
+    shouldn't be used in production deployments that run more than one process.
     """
-    def __init__(self) -> None:
-        self._state = None
+
+    def __init__(self, max_age: int = 600, max_pending: int = 1000) -> None:
+        self.max_age = max_age
+        self.max_pending = max_pending
+        self._states: "OrderedDict[str, float]" = OrderedDict()
 
     def store_state(self, request: Request, response: Optional[Response] = None) -> None:
-        self._state = request._oauth2_state
+        while len(self._states) >= self.max_pending:
+            self._states.popitem(last=False)
+        self._states[request.state.oauth2_state] = time.time() + self.max_age
 
     def read_state(self, request: Request) -> Optional[str]:
-        return self._state
+        state = request.query_params.get("state")
+        if state in self._states and self._states[state] >= time.time():
+            return state
+        return None
 
     def clear_state(self, request: Request, response: Response) -> None:
-        pass
+        self._states.pop(request.query_params.get("state"), None)
 
 
 class CookieStateBackend(StateBackend):
@@ -63,7 +73,7 @@ class CookieStateBackend(StateBackend):
         response.set_cookie(
             self.cookie_name,
             request.auth.jwt_encode({
-                'state': request._oauth2_state,
+                'state': request.state.oauth2_state,
                 'exp': int(time.time()) + self.max_age,
             }),
             max_age=self.max_age,
