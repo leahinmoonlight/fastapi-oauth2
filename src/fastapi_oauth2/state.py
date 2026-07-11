@@ -1,4 +1,4 @@
-import random
+import secrets
 import string
 import time
 from typing import Optional
@@ -9,7 +9,7 @@ from starlette.responses import Response
 
 class StateBackend:
     def generate_state(self, request: Request) -> str:
-        state = "".join([random.choice(string.ascii_letters) for _ in range(32)])
+        state = "".join([secrets.choice(string.ascii_letters) for _ in range(32)])
         if request.query_params.get("state"):
             state = request.query_params["state"]
         request._oauth2_state = state
