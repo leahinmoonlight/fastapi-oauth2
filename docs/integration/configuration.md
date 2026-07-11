@@ -104,7 +104,8 @@ Two implementations are available in the `fastapi_oauth2.state` module:
   is not shared across multiple workers or processes, and it can only track one user's flow at a time,
   so it shouldn't be used in production.
 - `CookieStateBackend` - Stores the `state` in a signed, short-lived cookie (signed with the same secret
-  as the session tokens).
+  as the session tokens). It requires `enable_ssr` to be `True`, since it needs a response to set and
+  clear the cookie.
 
 ```python
 from fastapi_oauth2.state import CookieStateBackend
