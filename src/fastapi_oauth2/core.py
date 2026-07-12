@@ -26,13 +26,16 @@ from .state import StateBackend, InMemoryStateBackend
 class OAuth2Strategy(BaseStrategy):
     """Dummy strategy for using the `BaseOAuth2.user_data` method."""
 
-    def request_data(self, merge=True) -> Dict[str, Any]:
+    @staticmethod
+    def request_data(merge=True) -> Dict[str, Any]:
         return {}
 
-    def absolute_uri(self, path=None) -> str:
+    @staticmethod
+    def absolute_uri(path=None) -> str:
         return path
 
-    def get_setting(self, name) -> Any:
+    @staticmethod
+    def get_setting(name) -> Any:
         value = os.getenv(name)
         if value is None:
             raise KeyError

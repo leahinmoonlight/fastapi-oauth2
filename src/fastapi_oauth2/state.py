@@ -10,12 +10,12 @@ from starlette.responses import Response
 
 
 class StateBackend:
-    def generate_state(self, request: Request) -> str:
-        state = "".join([secrets.choice(string.ascii_letters) for _ in range(32)])
+    @staticmethod
+    def generate_state(request: Request) -> str:
+        request.state.oauth2_state = "".join([secrets.choice(string.ascii_letters) for _ in range(32)])
         if request.query_params.get("state"):
-            state = request.query_params["state"]
-        request.state.oauth2_state = state
-        return state
+            request.state.oauth2_state = request.query_params["state"]
+        return request.state.oauth2_state
 
     def store_state(self, request: Request, response: Optional[Response] = None) -> None:
         """Called after the state has been generated during the redirect process.
