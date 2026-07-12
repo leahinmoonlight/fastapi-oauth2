@@ -27,7 +27,7 @@ configured [`state_backend`](/integration/configuration#statebackend). After aut
 the `/oauth2/{provider}/token` callback endpoint gets called with the provided `state`, it is validated against the
 stored value and then redirects to the `redirect_uri`.
 
-By default the `state` is kept in process memory (`InMemoryStateBackend`). For deployments running multiple workers or
+By default, the `state` is kept in process memory (`InMemoryStateBackend`). For deployments running multiple workers or
 processes, use `CookieStateBackend` (or a custom backend) so the `state` is shared correctly across them.
 
 ## PKCE support
