@@ -20,7 +20,7 @@ from .claims import Claims
 from .client import OAuth2Client
 from .exceptions import OAuth2AuthenticationError
 from .exceptions import OAuth2InvalidRequestError
-from .state import StateBackend, InMemoryStateBackend
+from .csrf_state import CSRFStateBackend, InMemoryStateBackend
 
 
 class OAuth2Strategy(BaseStrategy):
@@ -42,7 +42,7 @@ class OAuth2Strategy(BaseStrategy):
         return value
 
     @staticmethod
-    def get_json(url, method='GET', *args, **kwargs) -> httpx.Response:
+    def get_json(url, method="GET", *args, **kwargs) -> httpx.Response:
         return httpx.request(method, url, *args, **kwargs)
 
 
@@ -61,7 +61,7 @@ class OAuth2Core:
     _authorization_endpoint: str = None
     _token_endpoint: str = None
 
-    def __init__(self, client: OAuth2Client, state_backend: Optional[StateBackend] = None) -> None:
+    def __init__(self, client: OAuth2Client, state_backend: Optional[CSRFStateBackend] = None) -> None:
         self.client_id = client.client_id
         self.client_secret = client.client_secret
         self.scope = client.scope

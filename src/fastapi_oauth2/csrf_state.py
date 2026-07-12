@@ -9,7 +9,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 
-class StateBackend:
+class CSRFStateBackend:
     @staticmethod
     def generate_state(request: Request) -> str:
         request.state.oauth2_state = "".join([secrets.choice(string.ascii_letters) for _ in range(32)])
@@ -31,11 +31,10 @@ class StateBackend:
         raise NotImplementedError
 
 
-class InMemoryStateBackend(StateBackend):
+class InMemoryStateBackend(CSRFStateBackend):
     """Tracks pending states in memory, so multiple flows can be in flight at once
     within a single process. Does not work across multiple workers/processes, so it
-    shouldn't be used in production deployments that run more than one process.
-    """
+    shouldn't be used in production deployments that run more than one process."""
 
     def __init__(self, max_age: int = 600, max_pending: int = 1000) -> None:
         self.max_age = max_age
@@ -57,10 +56,10 @@ class InMemoryStateBackend(StateBackend):
         self._states.pop(request.query_params.get("state"), None)
 
 
-class CookieStateBackend(StateBackend):
+class CookieStateBackend(CSRFStateBackend):
     def __init__(
         self,
-        cookie_name: str = 'oauth2_state',
+        cookie_name: str = "CSRFState",
         max_age: int = 600,  # 10 minutes
     ):
         self.cookie_name = cookie_name
@@ -68,13 +67,13 @@ class CookieStateBackend(StateBackend):
 
     def store_state(self, request: Request, response: Optional[Response] = None) -> None:
         if not response:
-            raise RuntimeError('CookieStateBackend can only be used with SSR enabled.')
+            raise RuntimeError("CookieStateBackend can only be used with SSR enabled.")
 
         response.set_cookie(
             self.cookie_name,
-            request.auth.jwt_encode({
-                'state': request.state.oauth2_state,
-                'exp': int(time.time()) + self.max_age,
+            value=request.auth.jwt_encode({
+                "state": request.state.oauth2_state,
+                "exp": int(time.time()) + self.max_age,
             }),
             max_age=self.max_age,
             secure=not request.auth.http,
@@ -87,7 +86,7 @@ class CookieStateBackend(StateBackend):
         if not token:
             return None
         try:
-            return request.auth.jwt_decode(token).get('state')
+            return request.auth.jwt_decode(token).get("state")
         except JOSEError:
             return None
 

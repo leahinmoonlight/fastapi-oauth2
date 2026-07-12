@@ -4,8 +4,8 @@ from typing import Union
 from typing import Optional
 
 from .client import OAuth2Client
-from .state import CookieStateBackend
-from .state import StateBackend
+from .csrf_state import CookieStateBackend
+from .csrf_state import CSRFStateBackend
 
 
 class OAuth2Config:
@@ -18,7 +18,7 @@ class OAuth2Config:
     jwt_expires: int
     jwt_algorithm: str
     clients: List[OAuth2Client]
-    state_backend: Optional[StateBackend]
+    state_backend: Optional[CSRFStateBackend]
 
     def __init__(
             self,
@@ -30,7 +30,7 @@ class OAuth2Config:
             jwt_expires: Union[int, str] = 900,
             jwt_algorithm: str = "HS256",
             clients: List[OAuth2Client] = None,
-            state_backend: Optional[StateBackend] = None,
+            state_backend: Optional[CSRFStateBackend] = None,
     ) -> None:
         if allow_http:
             os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"

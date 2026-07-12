@@ -7,7 +7,7 @@ from httpx import AsyncClient
 from jose.jwt import encode as jwt_encode
 from oauthlib.oauth2 import WebApplicationClient
 
-from fastapi_oauth2.state import CookieStateBackend
+from fastapi_oauth2.csrf_state import CookieStateBackend
 
 
 async def oauth2_workflow(get_app, idp=False, ssr=True, authorize_query="", token_query="", use_header=False):
@@ -89,7 +89,7 @@ async def test_oauth2_cookie_state_backend_workflow(get_app):
     async with AsyncClient(app=get_app(with_idp=True, with_ssr=True, state_backend=CookieStateBackend()), base_url="http://test") as client:
         response = await client.get("/oauth2/test/authorize")
         assert response.status_code == 303  # Redirect
-        assert "oauth2_state=" in response.headers.get("set-cookie", "")  # State cookie issued
+        assert "CSRFState=" in response.headers.get("set-cookie", "")  # State cookie issued
         authorization_endpoint = response.headers.get("location")
         response = await client.get(authorization_endpoint)
         token_url = response.headers.get("location")

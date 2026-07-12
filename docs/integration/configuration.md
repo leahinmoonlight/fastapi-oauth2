@@ -108,7 +108,7 @@ Two implementations are available in the `fastapi_oauth2.state` module:
   clear the cookie.
 
 ```python
-from fastapi_oauth2.state import CookieStateBackend
+from fastapi_oauth2.csrf_state import CookieStateBackend
 
 OAuth2Config(
     ...,
